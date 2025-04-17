@@ -48,6 +48,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initialize | Widget")
 	FLinearColor BarColor = FLinearColor::White;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initialize | Widget")
+	bool bHasGhostBar = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initialize | Widget", meta = (EditCondition = "bHasGhostBar", EditConditionHides))
+	FLinearColor GhostBarColor = FLinearColor::Red;
+
 	FDelegateHandle AttributeChangeDelegateHandle;
 	FDelegateHandle MaxAttributeChangeDelegateHandle;
 

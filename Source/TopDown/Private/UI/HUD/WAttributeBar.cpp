@@ -25,6 +25,12 @@ void UWAttributeBar::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
+	if (!bHasGhostBar)
+	{
+		ProgressBar_Ghost->RemoveFromParent();
+		ProgressBar_Ghost = nullptr;
+	}
+	
 	ATopDownCharacter* PlayerCharacter = Cast<ATopDownCharacter>(GetOwningPlayerPawn());
 	if (!PlayerCharacter) return;
 	AbilitySystemComponent = PlayerCharacter->GetAbilitySystemComponent();
@@ -33,48 +39,54 @@ void UWAttributeBar::NativeConstruct()
 	{
 		BindToAbilitySystem();
 		UpdateProgressBarFirstTime();
-		ProgressBar_Ghost->SetPercent(1);
+		if (ProgressBar_Ghost)
+		{
+			ProgressBar_Ghost->SetPercent(1);
+		}
 	}
 }
 void UWAttributeBar::BindUpdateProgressBar(const FOnAttributeChangeData& Data)
 {
-    if (!AbilitySystemComponent || !ProgressBar || !ProgressBar_Ghost)
+    if (!AbilitySystemComponent || !ProgressBar)
         return;
 
-    float CurrentHealth = AbilitySystemComponent->GetNumericAttribute(Attribute);
-    float MaxHealth = AbilitySystemComponent->GetNumericAttribute(MaxAttribute);
-    if (MaxHealth <= 0.f) return;
+    float CurrentValue = AbilitySystemComponent->GetNumericAttribute(Attribute);
+    float MaxValue = AbilitySystemComponent->GetNumericAttribute(MaxAttribute);
+    if (MaxValue <= 0.f) return;
 
-    float RealPercent = CurrentHealth / MaxHealth;
+    float RealPercent = CurrentValue / MaxValue;
     
     if (Text)
     {
-        FString HealthText = FString::Printf(TEXT("%.0f/%.0f"), CurrentHealth, MaxHealth);
-        Text->SetText(FText::FromString(HealthText));
+        FString ValueText = FString::Printf(TEXT("%.0f / %.0f"), CurrentValue, MaxValue);
+        Text->SetText(FText::FromString(ValueText));
     }
 
     ProgressBar->SetPercent(RealPercent);
     
-    if (RealPercent < LastRealPercent)
-    {
-        AnimationStartPercent = LastRealPercent;  
-        AnimationTargetPercent = RealPercent;     
-        AnimationElapsedTime = 0.0f;              
+	if (ProgressBar_Ghost)
+	{
+		if (RealPercent < LastRealPercent)
+		{
+			AnimationStartPercent = LastRealPercent;  
+			AnimationTargetPercent = RealPercent;     
+			AnimationElapsedTime = 0.0f;              
         
-        if (!GetWorld()->GetTimerManager().IsTimerActive(UpdateTimerHandle))
-        {
-            GetWorld()->GetTimerManager().SetTimer(
-                UpdateTimerHandle, 
-                this, 
-                &UWAttributeBar::UpdateProgressBar, 
-                UpdateInterval, 
-                true);
-        }
-    }
-    else
-    {
-        ProgressBar_Ghost->SetPercent(RealPercent);
-    }
+			if (!GetWorld()->GetTimerManager().IsTimerActive(UpdateTimerHandle))
+			{
+				GetWorld()->GetTimerManager().SetTimer(
+					UpdateTimerHandle, 
+					this, 
+					&UWAttributeBar::UpdateProgressBar, 
+					UpdateInterval, 
+					true);
+			}
+		}
+		else
+		{
+			ProgressBar_Ghost->SetPercent(RealPercent);
+		}
+	}
     LastRealPercent = RealPercent;
 }
 
@@ -108,7 +120,7 @@ void UWAttributeBar::UpdateProgressBarFirstTime()
  
 	if (Text && AbilitySystemComponent)
 	{
-		FString HealthText = FString::Printf(TEXT("%.0f/%.0f"), AbilitySystemComponent->GetNumericAttribute(Attribute), AbilitySystemComponent->GetNumericAttribute(MaxAttribute));
+		FString HealthText = FString::Printf(TEXT("%.0f / %.0f"), AbilitySystemComponent->GetNumericAttribute(Attribute), AbilitySystemComponent->GetNumericAttribute(MaxAttribute));
 		Text->SetText(FText::FromString(HealthText));
 	}
 
