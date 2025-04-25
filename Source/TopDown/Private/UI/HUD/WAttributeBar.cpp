@@ -4,6 +4,7 @@
 #include "UI/HUD/WAttributeBar.h"
 
 #include "AbilitySystemComponent.h"
+#include "BaseClasses/ActorComponent/TopDownAbilitySystemComponent.h"
 #include "BaseClasses/Character/TopDownCharacter.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"

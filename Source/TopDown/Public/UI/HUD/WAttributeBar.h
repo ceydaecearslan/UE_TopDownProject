@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "WAttributeBar.generated.h"
 
+class UTopDownAbilitySystemComponent;
 class UTextBlock;
 struct FOnAttributeChangeData;
 class UPlayerAttributeSet;
@@ -58,7 +59,7 @@ protected:
 	FDelegateHandle MaxAttributeChangeDelegateHandle;
 
 	UPROPERTY()
-	UAbilitySystemComponent* AbilitySystemComponent;
+	UTopDownAbilitySystemComponent* AbilitySystemComponent;
 
 private:
 

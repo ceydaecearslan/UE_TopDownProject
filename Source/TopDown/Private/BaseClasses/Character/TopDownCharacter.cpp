@@ -2,10 +2,10 @@
 
 #include "TopDown/Public/BaseClasses/Character/TopDownCharacter.h"
 
-#include "AbilitySystemComponent.h"
+#include "BaseClasses/ActorComponent/CharacterClassComponent.h"
+#include "BaseClasses/ActorComponent/TopDownAbilitySystemComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
-#include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -47,6 +47,26 @@ ATopDownCharacter::ATopDownCharacter()
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	
-	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent = CreateDefaultSubobject<UTopDownAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AttributeSet = CreateDefaultSubobject<UPlayerAttributeSet>(TEXT("AttributeSet"));
+	CharacterClassComponent = CreateDefaultSubobject<UCharacterClassComponent>(TEXT("CharacterClassComponent"));
+
+	OnNewCharacterClassSelected.AddDynamic(this, &ATopDownCharacter::InitializeCharacterClass);
+	OnAbilityInputReceived.AddDynamic(this, &ATopDownCharacter::AbilityInputReceived);
+
+}
+
+void ATopDownCharacter::InitializeCharacterClass(FClassData NewData)
+{
+	CharacterClassComponent->InitializeClassData(NewData);
+	AbilitySystemComponent->InitializeAbilities(NewData.Abilities);
+}
+
+void ATopDownCharacter::AbilityInputReceived(EAbilityType AbilityType)
+{
+	FGameplayAbilitySpecHandle AbilityHandle = AbilitySystemComponent->GetAbilitySpecHandle(AbilityType);
+	if (AbilityHandle.IsValid())
+	{
+		AbilitySystemComponent->TryActivateAbility(AbilityHandle);
+	}
 }

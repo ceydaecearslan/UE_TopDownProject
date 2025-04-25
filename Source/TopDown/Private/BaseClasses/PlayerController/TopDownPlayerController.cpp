@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
+#include "BaseClasses/Character/TopDownCharacter.h"
 #include "Engine/LocalPlayer.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -26,6 +27,8 @@ void ATopDownPlayerController::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	PlayerCharacter = Cast<ATopDownCharacter>(GetPawn());
 }
 
 void ATopDownPlayerController::SetupInputComponent()
@@ -53,6 +56,12 @@ void ATopDownPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Triggered, this, &ATopDownPlayerController::OnTouchTriggered);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Completed, this, &ATopDownPlayerController::OnTouchReleased);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Canceled, this, &ATopDownPlayerController::OnTouchReleased);
+
+		//Ability input events
+		EnhancedInputComponent->BindAction(PrimaryAbilityInputAction, ETriggerEvent::Started, this, &ATopDownPlayerController::OnPrimaryAbilityInputStarted);
+		EnhancedInputComponent->BindAction(SecondaryAbilityInputAction, ETriggerEvent::Started, this, &ATopDownPlayerController::OnSecondaryAbilityInputStarted);
+		EnhancedInputComponent->BindAction(TertiaryAbilityInputAction, ETriggerEvent::Started, this, &ATopDownPlayerController::OnTertiaryAbilityInputStarted);
+		EnhancedInputComponent->BindAction(UltimateAbilityInputAction, ETriggerEvent::Started, this, &ATopDownPlayerController::OnUltimateAbilityInputStarted);
 	}
 	else
 	{
@@ -122,4 +131,24 @@ void ATopDownPlayerController::OnTouchReleased()
 {
 	bIsTouch = false;
 	OnSetDestinationReleased();
+}
+
+void ATopDownPlayerController::OnPrimaryAbilityInputStarted()
+{
+	PlayerCharacter->GetOnAbilityInputReceived().Broadcast(EAbilityType::Primary);
+}
+
+void ATopDownPlayerController::OnSecondaryAbilityInputStarted()
+{
+	PlayerCharacter->GetOnAbilityInputReceived().Broadcast(EAbilityType::Secondary);
+}
+
+void ATopDownPlayerController::OnTertiaryAbilityInputStarted()
+{
+	PlayerCharacter->GetOnAbilityInputReceived().Broadcast(EAbilityType::Tertiary);
+}
+
+void ATopDownPlayerController::OnUltimateAbilityInputStarted()
+{
+	PlayerCharacter->GetOnAbilityInputReceived().Broadcast(EAbilityType::Ultimate);
 }

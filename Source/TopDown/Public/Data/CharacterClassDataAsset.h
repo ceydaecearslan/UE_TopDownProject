@@ -10,14 +10,26 @@
  * 
  */
 
+class UGameplayAbilityBase;
+
 UENUM(BlueprintType)
 enum class ECharacterClass : uint8
 {
+	None 	  UMETA(DisplayName = "None"),
 	Warrior     UMETA(DisplayName = "Warrior"),
 	Mage        UMETA(DisplayName = "Mage"),
 	Rogue       UMETA(DisplayName = "Rogue"),
 	Archer      UMETA(DisplayName = "Archer"),
 	Cleric      UMETA(DisplayName = "Cleric")
+};
+
+UENUM(BlueprintType)
+enum class EAbilityType : uint8
+{
+	Primary,
+	Secondary,
+	Tertiary,
+	Ultimate
 };
 
 USTRUCT(BlueprintType)
@@ -26,7 +38,10 @@ struct FAbilityData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
-	FString AbilityID;
+	TSubclassOf<UGameplayAbilityBase> AbilityClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
+	EAbilityType AbilityType;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
 	FText AbilityDisplayName;
@@ -52,6 +67,15 @@ struct FClassData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Class Info")
 	ECharacterClass CharacterClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Class Info")
+	FText CharacterClassDisplayName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Class Info")
+	UTexture2D* ClassIcon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Class Info")
+	FText ClassDescription;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
 	TArray<FAbilityData> Abilities;
 };
@@ -61,8 +85,42 @@ class TOPDOWN_API UCharacterClassDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
 
+public:
+
+	UFUNCTION()
+	FClassData GetClassData(ECharacterClass Class) const
+	{
+		for (const FClassData& ClassData : Classes)
+		{
+			if (ClassData.CharacterClass == Class)
+			{
+				return ClassData;
+			}
+		}
+		return FClassData();
+	}
+
+	UFUNCTION()
+	TArray<FAbilityData> GetAbilities(ECharacterClass Class) const
+	{
+		for (const FClassData& ClassData : Classes)
+		{
+			if (ClassData.CharacterClass == Class)
+			{
+				return ClassData.Abilities;
+			}
+		}
+		return TArray<FAbilityData>();
+	}
+
+	UFUNCTION()
+	TArray<FClassData> GetClasses() const
+	{
+		return Classes;
+	}
+	
 protected:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FClassData> Classes;
 };

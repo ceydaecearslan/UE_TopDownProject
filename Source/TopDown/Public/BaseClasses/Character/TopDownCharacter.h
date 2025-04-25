@@ -3,13 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/CharacterClassDataAsset.h"
 #include "GameFramework/Character.h"
 #include "TopDownCharacter.generated.h"
 
+class UTopDownAbilitySystemComponent;
+struct FAbilityData;
+struct FClassData;
+class UCharacterClassComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UPlayerAttributeSet;
-class UAbilitySystemComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewCharacterClassSelected, FClassData, NewClassData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAbilityInputReceived, EAbilityType, AbilityType);
 
 UCLASS(Blueprintable)
 class ATopDownCharacter : public ACharacter
@@ -29,24 +36,53 @@ public:
 		return CameraBoom;
 	}
 	
-	FORCEINLINE UAbilitySystemComponent* GetAbilitySystemComponent() const
+	FORCEINLINE UTopDownAbilitySystemComponent* GetAbilitySystemComponent() const
 	{
 		return AbilitySystemComponent;
 	}
+	
+	FORCEINLINE UCharacterClassComponent* GetCharacterClassComponent() const
+	{
+		return CharacterClassComponent;
+	}
+	
+	FORCEINLINE FOnNewCharacterClassSelected GetOnNewCharacterClassSelected() const
+	{
+		return OnNewCharacterClassSelected;
+	}
+	
+	FORCEINLINE FOnAbilityInputReceived GetOnAbilityInputReceived() const
+	{
+		return OnAbilityInputReceived;
+	}
 
 protected:
-	/** Top down camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+
+	UFUNCTION()
+	void InitializeCharacterClass(FClassData NewData);
+
+	UFUNCTION()
+	void AbilityInputReceived(EAbilityType AbilityType);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCameraComponent> TopDownCameraComponent;
 
-	/** Camera boom positioning the camera above the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USpringArmComponent> CameraBoom;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+	TObjectPtr<UTopDownAbilitySystemComponent> AbilitySystemComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UCharacterClassComponent> CharacterClassComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Initialize | GAS")
 	TObjectPtr<UPlayerAttributeSet> AttributeSet;
+
+private:
+
+	FOnNewCharacterClassSelected OnNewCharacterClassSelected;
+	FOnAbilityInputReceived OnAbilityInputReceived;
+	
 };
 
